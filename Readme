@@ -1,0 +1,94 @@
+# 🛍️ Retail Sales Analysis (SQL Project)
+
+## 📌 Project Overview
+
+This project focuses on analyzing retail sales data using SQL. 
+The goal is to explore customer behavior, product performance, and sales trends to guide business decision-making.
+
+
+## 🧰 Tools Used
+- MySQL (Database & SQL queries)
+
+
+## 🧹 Data Cleaning Summary
+- All `NULL` values in critical fields were removed.
+- Fixed column name `quantiy` → `quantity`.
+- Columns were correctly casted (e.g., `sale_date` as `DATE`, `sale_time` as `TIME`).
+
+
+## 🔍 Data Exploration
+
+Total Sales Records:
+SELECT COUNT(*) FROM retail_sale_analysis;
+
+Unique Customers:
+SELECT COUNT(DISTINCT customer_id) FROM retail_sale_analysis;
+
+Categories Present:
+SELECT DISTINCT category FROM retail_sale_analysis;
+📈 Business Questions & SQL Queries
+
+1. Sales on a Specific Date
+SELECT * FROM retail_sale_analysis WHERE sale_date = '2023-10-07';
+
+2. Total Sales per Category
+SELECT category, SUM(total_sale) AS net_sale, COUNT(*) AS total_orders
+FROM retail_sale_analysis
+GROUP BY category;
+
+3. Average Age of 'Beauty' Category Shoppers
+SELECT ROUND(AVG(age), 2) FROM retail_sale_analysis WHERE category = 'Beauty';
+
+4. High-Value Transactions (> 1000)
+SELECT * FROM retail_sale_analysis WHERE total_sale > 1000 LIMIT 10;
+
+5. Transactions by Gender & Category
+SELECT category, gender, COUNT(*) AS total_trans
+FROM retail_sale_analysis
+GROUP BY category, gender;
+
+6. Best-Selling Month per Year
+SELECT year, month, avg_sale FROM (
+  SELECT 
+    EXTRACT(YEAR FROM sale_date) AS year,
+    EXTRACT(MONTH FROM sale_date) AS month,
+    AVG(total_sale) AS avg_sale,
+    RANK() OVER (PARTITION BY EXTRACT(YEAR FROM sale_date) ORDER BY AVG(total_sale) DESC) AS _rank
+  FROM retail_sale_analysis
+  GROUP BY year, month
+) t1
+WHERE _rank = 1;
+
+7. Top 5 Customers by Total Sales
+SELECT customer_id, SUM(total_sale) AS total_sale_analysis
+FROM retail_sale_analysis
+GROUP BY customer_id
+ORDER BY total_sale_analysis DESC
+LIMIT 5;
+
+8. Unique Customers by Category
+SELECT category, COUNT(DISTINCT customer_id) AS cnt_unique_cs
+FROM retail_sale_analysis
+GROUP BY category;
+
+9. Orders by Time of Day (Shift Analysis)
+WITH hourly_sale AS (
+  SELECT *,
+    CASE
+      WHEN EXTRACT(HOUR FROM sale_time) < 12 THEN 'Morning'
+      WHEN EXTRACT(HOUR FROM sale_time) BETWEEN 12 AND 17 THEN 'Afternoon'
+      ELSE 'Evening'
+    END AS shift
+  FROM retail_sale_analysis
+)
+SELECT shift, COUNT(*) AS total_orders
+FROM hourly_sale
+GROUP BY shift;
+
+📌 Key Takeaways
+Top Categories: Clothing and Beauty
+Customer Insight: Beauty buyers are on average in their mid-30s
+Peak Periods: High sales in specific months of the year
+High-Value Transactions: Multiple sales exceed ₹1000
+Time-based Trends: Most sales occur in the Afternoon and Evening
+
